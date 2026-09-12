@@ -9,75 +9,120 @@ interface PawTrail {
 export default function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isTouch, setIsTouch] = useState(false);
+  // Keep visible by default so mobile users immediately see the paw on screen
+  const [isVisible, setIsVisible] = useState(true);
   const [trail, setTrail] = useState<PawTrail[]>([]);
 
   const lastDropTimeRef = useRef(0);
-  const lastMousePosRef = useRef({ x: -100, y: -100 });
+  const lastPosRef = useRef({ x: -100, y: -100 });
 
   useEffect(() => {
+    // Initial position: center-right quadrant on mobile, center on desktop
+    const initX = typeof window !== 'undefined' ? (window.innerWidth <= 768 ? window.innerWidth * 0.78 : window.innerWidth / 2) : 200;
+    const initY = typeof window !== 'undefined' ? (window.innerWidth <= 768 ? window.innerHeight * 0.35 : window.innerHeight / 2) : 200;
+
+    let targetX = initX;
+    let targetY = initY;
+    let currentX = initX;
+    let currentY = initY;
+    let animFrameId: number;
+
     const isTouchDevice =
       'ontouchstart' in window ||
       navigator.maxTouchPoints > 0 ||
-      window.matchMedia('(pointer: coarse)').matches;
+      (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches);
 
-    if (isTouchDevice || window.innerWidth <= 768) {
-      setIsTouch(true);
-      return;
+    // If desktop, add class for custom cursor styling
+    if (!isTouchDevice && window.innerWidth > 768) {
+      document.body.classList.add('custom-cursor-active');
     }
 
-    document.body.classList.add('custom-cursor-active');
-
-    let mouseX = window.innerWidth / 2;
-    let mouseY = window.innerHeight / 2;
-    let currentX = mouseX;
-    let currentY = mouseY;
-    let animFrameId: number;
-
-    const onMouseMove = (e: MouseEvent) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-      if (!isVisible) setIsVisible(true);
-
+    const dropTrail = (x: number, y: number) => {
       const now = performance.now();
-      const dist = Math.hypot(
-        mouseX - lastMousePosRef.current.x,
-        mouseY - lastMousePosRef.current.y
-      );
+      const dist = Math.hypot(x - lastPosRef.current.x, y - lastPosRef.current.y);
 
-      // Drop a faded copy of paw every ~150ms while moving
-      if (now - lastDropTimeRef.current >= 150 && dist > 10) {
+      // Drop a faded copy of paw every ~140ms while moving
+      if (now - lastDropTimeRef.current >= 140 && dist > 12) {
         lastDropTimeRef.current = now;
-        lastMousePosRef.current = { x: mouseX, y: mouseY };
+        lastPosRef.current = { x, y };
 
         const newTrail: PawTrail = {
           id: Date.now() + Math.random(),
-          x: mouseX,
-          y: mouseY,
+          x,
+          y,
         };
 
-        setTrail((prev) => [...prev.slice(-12), newTrail]);
+        setTrail((prev) => [...prev.slice(-10), newTrail]);
       }
     };
 
-    const checkHover = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
+    const checkInteractiveHover = (target: EventTarget | null) => {
+      const el = target as HTMLElement | null;
+      if (!el) {
+        setIsHovered(false);
+        return;
+      }
 
-      const interactive = target.closest(
+      const interactive = el.closest(
         'a, button, input, textarea, select, [role="button"], .spotlight-card, .interactive-cursor, [onclick]'
       );
       setIsHovered(!!interactive);
     };
 
-    const onMouseLeave = () => setIsVisible(false);
-    const onMouseEnter = () => setIsVisible(true);
+    // --- MOUSE LISTENERS ---
+    const onMouseMove = (e: MouseEvent) => {
+      targetX = e.clientX;
+      targetY = e.clientY;
+      setIsVisible(true);
+      dropTrail(targetX, targetY);
+      checkInteractiveHover(e.target);
+    };
+
+    const onMouseLeave = () => {
+      if (!isTouchDevice) {
+        setIsVisible(false);
+      }
+    };
+
+    const onMouseEnter = () => {
+      setIsVisible(true);
+    };
+
+    // --- TOUCH LISTENERS (Mobile / Tablet) ---
+    // Cursor stays visible all the time, leaving it at the last touch position
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches && e.touches.length > 0) {
+        targetX = e.touches[0].clientX;
+        targetY = e.touches[0].clientY;
+        setIsVisible(true);
+        dropTrail(targetX, targetY);
+        checkInteractiveHover(e.target);
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches && e.touches.length > 0) {
+        targetX = e.touches[0].clientX;
+        targetY = e.touches[0].clientY;
+        setIsVisible(true);
+        dropTrail(targetX, targetY);
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      // In touch end, leave targetX and targetY at the last touch point and keep isVisible true
+      if (e.changedTouches && e.changedTouches.length > 0) {
+        targetX = e.changedTouches[0].clientX;
+        targetY = e.changedTouches[0].clientY;
+      }
+      setIsVisible(true);
+      setTimeout(() => setIsHovered(false), 300);
+    };
 
     // Smooth lag loop for cursor
     const render = () => {
-      currentX += (mouseX - currentX) * 0.22;
-      currentY += (mouseY - currentY) * 0.22;
+      currentX += (targetX - currentX) * 0.25;
+      currentY += (targetY - currentY) * 0.25;
 
       if (cursorRef.current) {
         cursorRef.current.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%)`;
@@ -87,20 +132,30 @@ export default function CustomCursor() {
 
     animFrameId = requestAnimationFrame(render);
 
+    // Register Mouse Listeners
     window.addEventListener('mousemove', onMouseMove, { passive: true });
-    window.addEventListener('mousemove', checkHover, { passive: true });
     document.addEventListener('mouseleave', onMouseLeave);
     document.addEventListener('mouseenter', onMouseEnter);
+
+    // Register Touch Listeners (Mobile site support: cursor stays visible at last touch)
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', onTouchEnd, { passive: true });
 
     return () => {
       document.body.classList.remove('custom-cursor-active');
       window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mousemove', checkHover);
       document.removeEventListener('mouseleave', onMouseLeave);
       document.removeEventListener('mouseenter', onMouseEnter);
+
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchcancel', onTouchEnd);
       cancelAnimationFrame(animFrameId);
     };
-  }, [isVisible]);
+  }, []);
 
   // Clean up trails after 600ms
   useEffect(() => {
@@ -110,8 +165,6 @@ export default function CustomCursor() {
     }, 600);
     return () => clearTimeout(timer);
   }, [trail]);
-
-  if (isTouch) return null;
 
   return (
     <>
@@ -141,7 +194,7 @@ export default function CustomCursor() {
       <div
         ref={cursorRef}
         id="paw-cursor-main"
-        className={`fixed top-0 left-0 pointer-events-none z-[9999] select-none transition-opacity duration-150 ${
+        className={`fixed top-0 left-0 pointer-events-none z-[9999] select-none transition-opacity duration-200 ${
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
         style={{ willChange: 'transform' }}
