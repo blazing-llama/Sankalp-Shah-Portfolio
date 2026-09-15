@@ -3,7 +3,7 @@ import PixelSankalpThor, { PixelSceneVariant } from './PixelSankalpThor';
 import ThorCinemaModal from './ThorCinemaModal';
 import TravelGalleryModal from './TravelGalleryModal';
 import { playSoftBark } from '../utils/retroAudio';
-import { Maximize2, ExternalLink, Image as ImageIcon, Heart } from 'lucide-react';
+import { Maximize2, ExternalLink, Heart } from 'lucide-react';
 
 interface FloatingHeart {
   id: number;
@@ -332,25 +332,14 @@ export default function OutsideBacklogSection() {
           </div>
 
           {/* =========================================================
-              CELL 4: MOVIES (Blurred 2x2 poster collage background)
+              CELL 4: MOVIES (favorites strip — no external poster assets)
              ========================================================= */}
           <div className="group relative bg-[#111111] border border-[#222222] hover:border-[#6C47FF]/50 rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:bg-[#141414] overflow-hidden">
-            {/* Subtle Blurred Movie Poster Collage Background (4 poster placeholders in 2x2 grid with dark overlay and 8px blur) */}
-            <div className="absolute inset-0 pointer-events-none opacity-20 group-hover:opacity-30 transition-opacity duration-300">
-              <div className="grid grid-cols-2 grid-rows-2 h-full w-full gap-1 p-1 filter blur-[8px] scale-105">
-                {[1, 2, 3, 4].map((p) => (
-                  <div
-                    key={p}
-                    className="bg-[#201C30] border border-[#3C3655] rounded flex items-center justify-center p-2 text-center"
-                  >
-                    <span className="text-[9px] font-mono text-[#8B6FFF] tracking-tighter">
-                      Upload poster
-                    </span>
-                  </div>
-                ))}
-              </div>
-              {/* Dark overlay */}
-              <div className="absolute inset-0 bg-[#111111]/80 backdrop-blur-[2px]" />
+            {/* Sprocket-hole film-strip motif along the top edge */}
+            <div className="absolute top-0 left-0 right-0 h-2.5 flex items-center justify-evenly bg-[#0A0A0E] opacity-70 pointer-events-none">
+              {Array.from({ length: 14 }).map((_, i) => (
+                <span key={i} className="w-1 h-1 rounded-[1px] bg-[#2E2E40]" />
+              ))}
             </div>
 
             <div className="relative z-10">
@@ -361,19 +350,20 @@ export default function OutsideBacklogSection() {
                 <span className="text-[11px] font-mono text-[#555555]">04</span>
               </div>
 
-              {/* 2x2 Visual Poster Placeholders Frame */}
+              {/* Favorites strip: a wrapped chip list, not poster art */}
               <div className="my-2 py-1 flex items-center justify-center">
-                <div className="grid grid-cols-2 gap-1.5 p-1.5 bg-[#0A0A0E]/90 border border-[#242430] rounded-lg shadow-inner">
-                  {['Oppenheimer', 'Dune', 'Zodiac', 'Parasite'].map((title, pIdx) => (
-                    <div
-                      key={pIdx}
-                      className="w-16 h-12 rounded bg-[#161622] border border-dashed border-[#2E2E40] flex flex-col items-center justify-center text-center p-1"
+                <div className="flex flex-wrap justify-center gap-1.5 p-2 bg-[#0A0A0E]/90 border border-[#242430] rounded-lg shadow-inner max-w-[190px]">
+                  {[
+                    'LOTR Trilogy', 'Pulp Fiction', 'Se7en', 'The Lion King',
+                    'Breaking Bad', 'Kill Bill', '3 Idiots', 'Tamasha',
+                    'Stranger Things', 'The Boys', 'Fleabag', 'The Sopranos',
+                  ].map((title) => (
+                    <span
+                      key={title}
+                      className="text-[9px] font-mono text-[#B8ACEA] bg-[#161622] border border-[#2E2E40] rounded px-1.5 py-1 leading-none"
                     >
-                      <ImageIcon className="w-3 h-3 text-[#6C47FF] mb-0.5 opacity-60" />
-                      <span className="text-[7.5px] font-mono text-[#777788] leading-tight truncate w-full">
-                        Upload poster
-                      </span>
-                    </div>
+                      {title}
+                    </span>
                   ))}
                 </div>
               </div>
