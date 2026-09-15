@@ -141,7 +141,7 @@ export default function OutsideBacklogSection() {
                 </button>
               </div>
 
-              {/* Pixel Art Interactive Showcase */}
+              {/* Interactive illustration showcase */}
               <div className="my-2 flex flex-col items-center">
                 <PixelSankalpThor
                   size="sm"
@@ -370,7 +370,7 @@ export default function OutsideBacklogSection() {
         </div>
       </div>
 
-      {/* Expanded Cinematic 16-Bit Retro Viewer Modal */}
+      {/* Expanded cinematic illustration viewer modal */}
       <ThorCinemaModal
         isOpen={isCinemaOpen}
         onClose={() => setIsCinemaOpen(false)}

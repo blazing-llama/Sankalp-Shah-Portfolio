@@ -42,7 +42,7 @@ export default function ThorCinemaModal({ isOpen, onClose }: ThorCinemaModalProp
               Sankalp &amp; Thor · Journey Chronicles
             </h3>
             <span className="text-[10px] font-mono uppercase tracking-wider text-[#A896FF] bg-[#6C47FF]/15 px-2 py-0.5 rounded border border-[#6C47FF]/30">
-              16-Bit Retro Art
+              Illustrated
             </span>
           </div>
 
@@ -145,7 +145,7 @@ export default function ThorCinemaModal({ isOpen, onClose }: ThorCinemaModalProp
             <span className="text-[#F2F2F2] font-semibold">The Co-Pilot:</span> Thor is an athletic grey-and-white American Staffordshire Terrier. From cobblestone wanderings to quiet rooftop moments under the cosmos, he reminds me that the best systems are built with loyalty, calm focus, and joy.
           </p>
           <div className="font-mono text-[11px] text-[#555555] shrink-0">
-            FRAME RATE: 60 FPS · 16-BIT RETRO
+            HAND-ILLUSTRATED · SANKALP &amp; THOR
           </div>
         </div>
       </div>
