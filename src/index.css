@@ -31,7 +31,7 @@
   body {
     background-color: var(--bg);
     color: var(--text);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 15px;
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
@@ -53,11 +53,12 @@
 
 /* Custom font utilities */
 .font-syne {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Fraunces', serif;
+  font-optical-sizing: auto;
 }
 
 .font-inter {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* Subtle background noise */
