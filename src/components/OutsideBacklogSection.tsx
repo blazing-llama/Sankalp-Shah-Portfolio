@@ -197,7 +197,7 @@ export default function OutsideBacklogSection() {
                 <span className="text-[11px] font-mono text-[#555555]">02</span>
               </div>
 
-              {/* Exact 8x8 Chessboard SVG according to specs */}
+              {/* 8x8 board showing Scholar's Mate — 1.e4 e5 2.Bc4 Nc6 3.Qh5 Nf6?? 4.Qxf7# */}
               <div className="my-2 py-1 flex items-center justify-center">
                 <div className="p-1.5 bg-[#0C0C10] rounded-lg border border-[#22222E] shadow-inner">
                   <svg
@@ -206,48 +206,72 @@ export default function OutsideBacklogSection() {
                     height="144"
                     className="rounded overflow-hidden"
                   >
-                    {/* Render 8x8 squares */}
+                    {/* Board squares */}
                     {Array.from({ length: 8 }).map((_, row) =>
                       Array.from({ length: 8 }).map((_, col) => {
                         const isDark = (row + col) % 2 === 1;
-                        // e4: col = 4 (file e), row = 4 (rank 4 from 8..1)
-                        const isE4 = col === 4 && row === 4;
-
+                        // f7 (col 5, row 1): the mating queen's square
+                        const isMateSquare = col === 5 && row === 1;
                         return (
-                          <g key={`sq-${row}-${col}`}>
-                            <rect
-                              x={col * 20}
-                              y={row * 20}
-                              width={20}
-                              height={20}
-                              fill={isE4 ? '#6C47FF' : isDark ? '#1a1a24' : '#2e2e3e'}
-                              className={isE4 ? 'shadow-sm' : ''}
-                            />
-                            {isE4 && (
-                              <>
-                                {/* Glowing dot on e4 */}
-                                <circle
-                                  cx={col * 20 + 10}
-                                  cy={row * 20 + 10}
-                                  r="2.5"
-                                  fill="#FFFFFF"
-                                  opacity="0.9"
-                                />
-                                {/* Minimalist Knight Icon */}
-                                <path
-                                  d="M86,85 C86,82 89,81 92,81 C95,81 97,83 97,86 C97,87 96,89 95,90 C96,91 97,93 96,95 L84,95 C84,93 85,90 86,89 C84.5,88 84.5,86 86,85 Z"
-                                  fill="#F2F2F2"
-                                  opacity="0.95"
-                                />
-                              </>
-                            )}
-                          </g>
+                          <rect
+                            key={`sq-${row}-${col}`}
+                            x={col * 20}
+                            y={row * 20}
+                            width={20}
+                            height={20}
+                            fill={isMateSquare ? '#6C47FF' : isDark ? '#1a1a24' : '#2e2e3e'}
+                          />
                         );
                       })
                     )}
+
+                    {/* Pieces — algebraic square -> (col, row): col = file a..h -> 0..7, row = 8-rank */}
+                    {[
+                      // White
+                      { sq: 'e1', p: '♔', white: true }, { sq: 'f7', p: '♕', white: true },
+                      { sq: 'c4', p: '♗', white: true }, { sq: 'c1', p: '♗', white: true },
+                      { sq: 'b1', p: '♘', white: true }, { sq: 'g1', p: '♘', white: true },
+                      { sq: 'a1', p: '♖', white: true }, { sq: 'h1', p: '♖', white: true },
+                      { sq: 'a2', p: '♙', white: true }, { sq: 'b2', p: '♙', white: true },
+                      { sq: 'c2', p: '♙', white: true }, { sq: 'd2', p: '♙', white: true },
+                      { sq: 'e4', p: '♙', white: true }, { sq: 'g2', p: '♙', white: true },
+                      { sq: 'h2', p: '♙', white: true },
+                      // Black
+                      { sq: 'e8', p: '♚', white: false }, { sq: 'd8', p: '♛', white: false },
+                      { sq: 'c8', p: '♝', white: false }, { sq: 'f8', p: '♝', white: false },
+                      { sq: 'c6', p: '♞', white: false }, { sq: 'f6', p: '♞', white: false },
+                      { sq: 'a8', p: '♜', white: false }, { sq: 'h8', p: '♜', white: false },
+                      { sq: 'a7', p: '♟', white: false }, { sq: 'b7', p: '♟', white: false },
+                      { sq: 'c7', p: '♟', white: false }, { sq: 'd7', p: '♟', white: false },
+                      { sq: 'e5', p: '♟', white: false }, { sq: 'g7', p: '♟', white: false },
+                      { sq: 'h7', p: '♟', white: false },
+                    ].map(({ sq, p, white }, i) => {
+                      const col = sq.charCodeAt(0) - 'a'.charCodeAt(0);
+                      const row = 8 - parseInt(sq[1], 10);
+                      return (
+                        <text
+                          key={`pc-${i}`}
+                          x={col * 20 + 10}
+                          y={row * 20 + 15}
+                          textAnchor="middle"
+                          fontSize="16"
+                          fill={white ? '#F6F3ED' : '#0A0A0A'}
+                          stroke={white ? '#0A0A0A' : '#F6F3ED'}
+                          strokeWidth="0.6"
+                        >
+                          {p}
+                        </text>
+                      );
+                    })}
+
+                    {/* Check glow on the black king's square (e8) */}
+                    <circle cx={4 * 20 + 10} cy={0 * 20 + 10} r="9" fill="none" stroke="#EF4444" strokeWidth="1.5" opacity="0.8" />
                   </svg>
                 </div>
               </div>
+              <p className="text-[10px] font-mono text-[#6C47FF] text-center mb-1">
+                SCHOLAR&apos;S MATE · 4 MOVES
+              </p>
 
               <h3 className="font-syne font-bold text-lg text-[#F2F2F2] group-hover:text-white transition-colors mb-1 text-center">
                 Chess
