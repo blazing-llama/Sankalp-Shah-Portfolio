@@ -11,7 +11,7 @@ export default function BuiltSection({ onOpenProjectDetail }: BuiltSectionProps)
   const featured = BUILT_PROJECTS.find((p) => p.isFeatured);
   const myntra = BUILT_PROJECTS.find((p) => p.id === 'myntra');
   const chatgpt = BUILT_PROJECTS.find((p) => p.id === 'chatgpt-voice');
-  const reviewPulse = BUILT_PROJECTS.find((p) => p.id === 'review-pulse');
+  const reviewPulse = BUILT_PROJECTS.find((p) => p.id === 'weekly-review-pulse');
   const mfFaq = BUILT_PROJECTS.find((p) => p.id === 'mf-faq');
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {

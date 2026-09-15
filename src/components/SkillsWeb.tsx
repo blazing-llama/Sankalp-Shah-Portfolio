@@ -36,8 +36,8 @@ export default function SkillsWeb({ onSkillSelect }: SkillsWebProps) {
         : '#EC4899',
   }));
 
-  // Coordinate geometry for 720x620 viewBox
-  const center = { x: 360, y: 310 };
+  // Coordinate geometry for 780x680 viewBox
+  const center = { x: 390, y: 335 };
   const branchRadius = 165;
 
   // 5 branch angles (in radians):
@@ -63,32 +63,74 @@ export default function SkillsWeb({ onSkillSelect }: SkillsWebProps) {
 
   const activeBranchData = branchesWithCoords.find((b) => b.name === expandedBranch);
 
-  // Compute fan-out positions for active branch's skills
+  // Compute fan-out positions for active branch's skills.
+  // Pills are placed by allocating each one an angular slice proportional to
+  // its rendered width (plus a fixed gap), so pills never overlap regardless
+  // of how many skills or how long their labels are. Skills alternate between
+  // a near and far ring to keep the arc from spreading too wide.
+  const pillWidthOf = (skill: string) => Math.max(skill.length * 6.5 + 20, 68);
+  const MIN_ARC_GAP = 16; // px gap enforced between adjacent pills along the arc
+  const MAX_RING_SPREAD = (150 * Math.PI) / 180;
+
+  const layoutRing = (
+    items: { skill: string; origIdx: number }[],
+    radius: number,
+    baseAngle: number,
+    angleOffset = 0
+  ) => {
+    const angles = items.map(
+      ({ skill }) => (pillWidthOf(skill) + MIN_ARC_GAP) / radius
+    );
+    const totalAngle = angles.reduce((a, b) => a + b, 0);
+    const spread = Math.min(totalAngle, MAX_RING_SPREAD);
+    const scale = totalAngle > 0 ? spread / totalAngle : 1;
+    let cursor = baseAngle + angleOffset - spread / 2;
+    return items.map(({ skill, origIdx }, i) => {
+      const a = angles[i] * scale;
+      const angle = cursor + a / 2;
+      cursor += a;
+      return { skill, origIdx, angle, radius };
+    });
+  };
+
   const fanSkills = activeBranchData
-    ? activeBranchData.skills.map((skill, sIdx, arr) => {
-        const total = arr.length;
-        // Fan arc oriented along direction of branch from center
+    ? (() => {
+        const arr = activeBranchData.skills;
         const baseAngle = activeBranchData.angle;
-        // Total spread of arc: ~130 degrees for 7-8 skills, or ~100 degrees for 4-5 skills
-        const arcSpread = total > 5 ? (135 * Math.PI) / 180 : (100 * Math.PI) / 180;
-        const step = total > 1 ? arcSpread / (total - 1) : 0;
-        const skillAngle = baseAngle - arcSpread / 2 + sIdx * step;
+        const indexed = arr.map((skill, origIdx) => ({ skill, origIdx }));
 
-        // Radial distance from the branch node
-        // Stagger radii slightly so pills don't collide
-        const fanDist = total > 6 ? (sIdx % 2 === 0 ? 86 : 108) : 92;
+        // Near/far rings are spaced far enough apart (64px) that pills can't
+        // collide radially, and the far ring is rotated a few degrees off
+        // the near ring so pills don't line up along the same radial line
+        // (which would otherwise put two wide pills right next to each
+        // other even with a radius gap).
+        const useDualRing = arr.length > 5;
+        const placed = useDualRing
+          ? [
+              ...layoutRing(
+                indexed.filter((_, i) => i % 2 === 0),
+                86,
+                baseAngle
+              ),
+              ...layoutRing(
+                indexed.filter((_, i) => i % 2 === 1),
+                150,
+                baseAngle,
+                (10 * Math.PI) / 180
+              ),
+            ]
+          : layoutRing(indexed, 104, baseAngle);
 
-        const sx = activeBranchData.x + fanDist * Math.cos(skillAngle);
-        const sy = activeBranchData.y + fanDist * Math.sin(skillAngle);
-
-        return {
-          skill,
-          sx,
-          sy,
-          branchX: activeBranchData.x,
-          branchY: activeBranchData.y,
-        };
-      })
+        return placed
+          .sort((a, b) => a.origIdx - b.origIdx)
+          .map(({ skill, angle, radius }) => ({
+            skill,
+            sx: activeBranchData.x + radius * Math.cos(angle),
+            sy: activeBranchData.y + radius * Math.sin(angle),
+            branchX: activeBranchData.x,
+            branchY: activeBranchData.y,
+          }));
+      })()
     : [];
 
   const handleBranchClick = (branchName: string) => {
@@ -142,9 +184,9 @@ export default function SkillsWeb({ onSkillSelect }: SkillsWebProps) {
       </div>
 
       {/* Main Interactive SVG Canvas */}
-      <div className="relative w-full aspect-[720/620] max-h-[620px] flex items-center justify-center my-2">
+      <div className="relative w-full aspect-[780/680] max-h-[680px] flex items-center justify-center my-2">
         <svg
-          viewBox="0 0 720 620"
+          viewBox="0 0 780 680"
           className="w-full h-full overflow-visible"
           style={{ touchAction: 'manipulation' }}
         >
@@ -284,7 +326,7 @@ export default function SkillsWeb({ onSkillSelect }: SkillsWebProps) {
               fill="#FFFFFF"
               fontSize="14"
               fontWeight="800"
-              fontFamily="Syne, sans-serif"
+              fontFamily="Fraunces, serif"
               letterSpacing="-0.02em"
             >
               Skills &amp;
@@ -295,7 +337,7 @@ export default function SkillsWeb({ onSkillSelect }: SkillsWebProps) {
               fill="#FFFFFF"
               fontSize="14"
               fontWeight="800"
-              fontFamily="Syne, sans-serif"
+              fontFamily="Fraunces, serif"
               letterSpacing="-0.02em"
             >
               Tools
@@ -360,7 +402,7 @@ export default function SkillsWeb({ onSkillSelect }: SkillsWebProps) {
                   fill={isExpanded ? '#FFFFFF' : '#F2F2F2'}
                   fontSize="12"
                   fontWeight="700"
-                  fontFamily="Syne, sans-serif"
+                  fontFamily="Fraunces, serif"
                 >
                   {b.name}
                 </text>
@@ -423,7 +465,7 @@ export default function SkillsWeb({ onSkillSelect }: SkillsWebProps) {
                   fill={isSelected ? '#FFFFFF' : '#D4D4E0'}
                   fontSize="9.5"
                   fontWeight="600"
-                  fontFamily="Inter, sans-serif"
+                  fontFamily="'Plus Jakarta Sans', sans-serif"
                   className="transition-colors group-hover:fill-white select-none"
                 >
                   {fs.skill}

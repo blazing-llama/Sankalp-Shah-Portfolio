@@ -76,7 +76,7 @@ export default function Hero() {
       <div className="hero-glow-pulse" aria-hidden="true" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8">
-        {/* Badge & Subtle Pixel Art Personality */}
+        {/* Badge & Sankalp + Thor illustration */}
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div
             id="hero-availability-badge"
